@@ -54,7 +54,9 @@ Each chart is accessible through the dashboard UI (top buttons) and designed to 
 
 Prerequisites:
 
-* Python 3.10+ recommended. I tested with Python 3.11 on Windows 11.
+* Python 3.10+ recommended. I tested with Python 3.14.2 on Windows 11. 
+* **SETUP.PY DOES NOT WORK WITH PYTHON 3.14** (llama-cpp does not have a version that recent)
+* *if using python v3.14 or higher install using **"pip install llama-cpp-python"** (will need a C++ compiler)
 * Optional: an environment manager (venv, conda)
 
 Steps:
@@ -78,11 +80,18 @@ source venv/bin/activate
 
 3. Install dependencies:
 
+* Ff you are running python 3.10 through 3.12:
 ```bash
 python setup.py
 ```
-
 This script installs the packages from `requirements.txt` and configures `llama-cpp-python` without requiring a local C++ compiler (first-time setup may take a few minutes).
+
+* If you are running python 3.14 or higher get a C++ compiler, ignore setup.py and run:
+
+```bash
+pip install llama-cpp-python
+pip install -r requirements.txt
+```
 
 4. (If you want the local AI assistant) Download the model and place it in `models/` (optional — the dashboard works without the AI agent):
 
