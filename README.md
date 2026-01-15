@@ -51,7 +51,9 @@ In an attempt to differentiate myself from other candidates, I've implemented a 
 
 # SETTING IT UP:
 
-## 0. Have python installed
+## 0. Have python installed and verify compatibility.
+
+If using a Linux device i recommend running **sudo apt-get install python3-tk** or equivalent before doing step 3 since the **Tkinter** library isn't downloaded by default with python on linux. This program was made on Windows 11 so you may still experience errors when switching platforms, depending on linux distros or MacOS versions.
 
 ## 1. Clone this repository 
 
@@ -65,11 +67,11 @@ In an attempt to differentiate myself from other candidates, I've implemented a 
 
 **IMPORTANT!**: IT WONT WORK WITH ANY OTHER MODEL WITHOUT CODE CHANGES (on ai_analyst.py)
 
-## 3. Run "setup.py"
+## 3. Run "python setup.py" on terminal
 
 This installs **"requirements.txt"** and **llama-cpp-python** without the need for a C++ compiler. Await for the installation to finish, it's only needed on the first time configuration
 
-## 4. Run "python src/main.py"
+## 4. Run "python src/main.py" on terminal
 
 You can select the graphs/charts options from the buttons on the top of the screen and generate AI insights by clicking on the button on the bottom right (wait some time if your device is older for generation). Enjoy the app!
 
