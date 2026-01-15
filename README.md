@@ -117,9 +117,10 @@ Use the top buttons to switch between charts. Click the bottom-right button to g
 
 The AI assistant is the heaviest optional component. Minimum recommended specs to run everything comfortably:
 
-* **16 GB RAM** (8 GB may work but will be slow if AI loads)
+* **16 GB RAM** (8 GB _may_ work but will be slow if AI loads)
 * **~3 GB disk** (SSD recommended)
 * CPU roughly equivalent to Ryzen 3600G / Intel i5-8400 or newer.
+* GPU recommended, specially with CUDA cores. Just makes generataing faster
 
 My dev machine: Intel i5-14600KF, Radeon 9060 16GB, 32 GB DDR5 — I used that to test performance.
 
@@ -129,7 +130,7 @@ My dev machine: Intel i5-14600KF, Radeon 9060 16GB, 32 GB DDR5 — I used that t
 
 * The project favors clarity and reproducibility: SQL queries are intentionally explicit and placed together in `graphs.py` for review.
 * The AI assistant is **optional** and only included as a differentiator; it’s not required to reproduce the visual insights.
-* If you run into `Tkinter` problems on Linux, install `python3-tk` (e.g. `sudo apt-get install python3-tk`).
+* If you run into `Tkinter` problems on Linux, install `python3-tk` (e.g. `sudo apt-get install python3-tk` or distro equivalent).
 
 ---
 
@@ -147,6 +148,6 @@ If you prefer to run a single script that generates PNG exports of all charts (n
 
 ## Final thoughts
 
-Thanks for taking a look! I tried to preserve useful implementation details while making the repository explicitly match the take‑home's requirements: Python + SQL processing, visualizations, and a concise set of business recommendations. If you want the README shortened for the repo root or adjusted to a specific reviewer style, tell me which sections to prioritize and I’ll update it.
+Thanks for taking a look! I tried to preserve useful implementation details while making the repository explicitly match the take‑home's requirements: Python + SQL processing, visualizations, and a concise set of business recommendations. Even if doesn't get me selected it was a rather fun quick side project.
 
 — Pedro
