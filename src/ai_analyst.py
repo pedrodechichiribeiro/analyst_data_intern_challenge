@@ -33,7 +33,7 @@ class AIAnalyst:
                 model_path=model_path_str,
                 n_ctx=2048,      
                 n_batch=512, 
-                n_gpu_layers=0,   
+                n_gpu_layers=-1,   
                 verbose=False     
             )
 

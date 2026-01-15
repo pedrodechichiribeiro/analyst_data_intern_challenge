@@ -39,9 +39,11 @@ My solution was to create a responsive dashboard where the user would have acess
 
 In an attempt to differentiate myself from other candidates, I've implemented a local AI agent for data analysis. The model used is **Gemma 3 4B (quantized)**. It strikes a balance between performance and accessibility: large enough to minimize hallucinations, yet small enough to run on widely available hardware. Please note that this acts more as a 'proof of concept' than a final implementation. Since I do not know the specifications of the device running this code, I could not fully optimize the model for speed or cohesion. It may run slowly on older machines, but it should work on any system meeting these minimum requirements:
 
-- 8GB DDR4 RAM (16GB recommended, as the DB is loaded into memory)
+- 16GB DDR4 RAM (8gb is technically the minimum requirement, but i heavily more since the DB is loaded into memory)
 - 3gb disk space (recommend SSD)
 - Ryzen 3600G / Intel i5-8400
+
+(My specs that i ran this program: Intel i5 14600kf, Radeon 9060 16gb and 32gb DDR5 5600Mhz RAM)
 
     **Note:** Even if the AI does not load, the graphs will still function normally as intended.
 
