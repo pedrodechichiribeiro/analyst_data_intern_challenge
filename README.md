@@ -1,3 +1,5 @@
+note: i've run this using Windows 11 and VSCode
+
 # Summary
 
 Hi! My name is **Pedro Dechichi Ribeiro**. I'm computer engineering student on the "Universidade Federal de Uberlândia" (UFU for short) in Brazil.
@@ -53,7 +55,7 @@ In an attempt to differentiate myself from other candidates, I've implemented a 
 
 ## 2. Download Gemma 3:
 
-- 2.1: Go to **"https://huggingface.co/unsloth/gemma-3-4b-it-GGUF/tree/main"**
+- 2.1: Go to **"https://huggingface.co/unsloth/gemma-3-4b-it-GGUF/blob/main/gemma-3-4b-it-Q4_K_M.gguf"**
 - 2.2: Download  the specific model **"gemma-3-4b-it-Q4_K_M.gguf"**
 - 2.3: Place it on the **"models" folder**
 
@@ -61,11 +63,11 @@ In an attempt to differentiate myself from other candidates, I've implemented a 
 
 ## 3. Run "setup.py"
 
-This installs **"requirements.txt"** and **llama-cpp-python** without the need for a C++ compiler.
+This installs **"requirements.txt"** and **llama-cpp-python** without the need for a C++ compiler. Await for the installation to finish, it's only needed on the first time configuration
 
-## 4. Run "main.py"
+## 4. Run "python /src/main.py"
 
-Enjoy the program!
+You can select the graphs/charts options from the buttons on the top of the screen and generate AI insights by clicking on the button on the bottom right (wait some time if your device is older for generation). Enjoy the app!
 
 ---
 

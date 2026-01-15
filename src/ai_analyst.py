@@ -1,4 +1,9 @@
 import os
+from pathlib import Path
+
+BASE_DIR = Path(__file__).resolve().parent.parent
+MODELS_DIR = BASE_DIR / "models"
+
 try:
     from llama_cpp import Llama
 except ImportError:
@@ -9,11 +14,11 @@ class AIAnalyst:
     def __init__(self):
         print("Initializing AI Analyst (Gemma 3 4B Quantized)...")
         self.model_filename = "gemma-3-4b-it-Q4_K_M.gguf" 
-        
-        model_path = os.path.join("models", self.model_filename)
+        self.model_path = MODELS_DIR / self.model_filename
+        model_path_str = str(self.model_path)
 
-        if not os.path.exists(model_path):
-            print(f"CRITICAL ERROR: Model file not found at {model_path}")
+        if not os.path.exists(model_path_str):
+            print(f"CRITICAL ERROR: Model file not found at {model_path_str}")
             print(f"Please download '{self.model_filename}' and place it in the 'models' folder.") # Updated instruction
             self.llm = None
             return
@@ -25,7 +30,7 @@ class AIAnalyst:
         try:
             # Initialize the AI model using llama-cpp-python
             self.llm = Llama(
-                model_path=model_path,
+                model_path=model_path_str,
                 n_ctx=2048,      
                 n_batch=512, 
                 n_gpu_layers=0,   

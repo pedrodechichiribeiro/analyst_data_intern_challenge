@@ -2,6 +2,11 @@
 
 import pandas as pd
 import sqlite3
+from pathlib import Path
+
+BASE_DIR = Path(__file__).resolve().parent.parent
+DATA_DIR = BASE_DIR / "data"
+
 
 class DataManager:
     def __init__(self):
@@ -14,10 +19,14 @@ class DataManager:
             
             # First the JSON is read, using panda, turning it into workable dataframes of the cases and accounts
 
-            cases = pd.read_json('data/support_cases_anonymized.json')
+            cases_path = DATA_DIR / "support_cases_anonymized.json"
+            accounts_path = DATA_DIR / "accounts_anonymized.json"
+
+            cases = pd.read_json(cases_path)
+            accounts = pd.read_json(accounts_path, convert_dates=["account_created_date"])
+            
             cases['case_created_date'] = pd.to_datetime(cases['case_created_date'])
             cases['case_closed_date'] = pd.to_datetime(cases['case_closed_date'])
-            accounts = pd.read_json('data/accounts_anonymized.json', convert_dates=['account_created_date'])
 
             # The dataframes are initialized in system memory as a SQL table for faster, optmized, access.
             
