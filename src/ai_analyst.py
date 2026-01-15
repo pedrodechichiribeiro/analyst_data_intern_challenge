@@ -51,7 +51,7 @@ class AIAnalyst:
                 model_path=str(self.model_path),
                 n_ctx=2048,      
                 n_batch=512, 
-                n_gpu_layers=-1, # <--- MAX PERFORMANCE 
+                n_gpu_layers=-1, 
                 verbose=False     
             )
             print("AI Engine Online.")
