@@ -1,6 +1,6 @@
 # Summary
 
-Hi! My name is Pedro Dechichi Ribeiro. I'm computer engineering student on the "Universidade Federal de Uberlândia" (UFU for short) in Brazil.
+Hi! My name is **Pedro Dechichi Ribeiro**. I'm computer engineering student on the "Universidade Federal de Uberlândia" (UFU for short) in Brazil.
 
 This repository is my submission for the "GlobalVision Systems & Data Intern Take Home". The goal was, given the anonymized datasets provided, utilize SQL and Python to produce insightful data visualizations that could produce meaningful support for business decisions. 
 
