@@ -240,35 +240,41 @@ class GraphLibrary:
         df = self.db.get_query(sql)
         
         # Plotting
+        
         ax.barh(df['account_country'], df['density'], color='#d35400') 
         ax.invert_yaxis()
         ax.set_title('Support Density (Tickets per Account)')
         ax.set_xlabel('Avg Tickets per Customer')
 
-        # 5.1 - AI CONTEXT (same as the heat map, adjusted for Canadian bias)
+        # 5.1 - AI CONTEXT 
         
         if not df.empty:
-            top_country = df.iloc[0]['account_country']
-            top_val = df.iloc[0]['density']
-            
-            # Get Canada density for comparison
+            # 1. Isolate Canada (Baseline)
             can_row = df[df['account_country'] == 'Canada']
             can_density = can_row.iloc[0]['density'] if not can_row.empty else 0.0
             
+            # 2. Get the top 3 NON-Canada regions to show the drop-off
+            others = df[df['account_country'] != 'Canada'].head(3)
+            
+            others_str = ""
+            for _, row in others.iterrows():
+                others_str += f"{row['account_country']} ({row['density']:.2f}), "
+            
+            # 3. context with explicit comparisons
             data_context = (
                 f"Global Vision is a Canadian Company. "
-                f"Top Density Region: {top_country} ({top_val:.2f} tickets/user). "
-                f"Home Market (Canada) Density: {can_density:.2f} tickets/user. "
-                f"Global Average Density: {df['density'].mean():.2f}."
+                f"BASELINE (Canada): {can_density:.2f} tickets/user. "
+                f"NEXT HIGHEST REGIONS: {others_str.strip(', ')}. "
+                f"Global Average Density: {df['density'].mean():.2f}. "
             )
         else:
             data_context = "No density data available."
         
+        # 4. Updated Prompt to handle the 'Lower' scenario better
         system_prompt = (
-            "You are a CX Analyst. Analyze the 'Neediness' of regions. "
-            "Treat Canada as the baseline (Standard behavior). "
-            "If a region has significantly HIGHER density than Canada, flag it as a 'Problem Area' (Training/Bugs). "
-            "If a region has much LOWER density, flag it as 'Low Engagement' or 'Silent Churn Risk'."
+            "You are a CX Analyst. Compare the 'Next Highest Regions' against the 'Baseline (Canada)'. "
+            "If the other regions are significantly LOWER than Canada, flag this as 'Low Engagement' or 'Adoption Lag' outside the home market. "
+            "Only flag a 'Problem Area' if a region is mathematically HIGHER than Canada."
         )
         
         return system_prompt, data_context

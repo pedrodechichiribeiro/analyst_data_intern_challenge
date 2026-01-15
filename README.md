@@ -66,3 +66,15 @@ This installs **"requirements.txt"** and **llama-cpp-python** without the need f
 ## 4. Run "main.py"
 
 Enjoy the program!
+
+---
+
+# EXTRA INFO:
+
+- 1. All SQL prompts are located in **"graphs.py"**, the SQL connection is estabilished on **"data_manager.py"**
+- 2. This program utilizes the following third-party libraries: 
+
+    - **CustomTkinter** (GUI and dashboard)
+    - **Matplotlib** (graph and chart plotting)
+    - **Pandas** (data analysis and manipulation) 
+    - **llama-cpp-python** (AI agent implementation)

@@ -16,6 +16,7 @@ import matplotlib.pyplot as plt
 from data_manager import DataManager
 from graphs import GraphLibrary
 from ai_analyst import AIAnalyst
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
 
 # Set global appearance to Dark and Modern
 ctk.set_appearance_mode("dark")
@@ -202,6 +203,8 @@ class AnalyticsApp(ctk.CTk):
         
         canvas = FigureCanvasTkAgg(fig, master=self.canvas_frame)
         canvas.draw()
+        toolbar = NavigationToolbar2Tk(canvas, self.canvas_frame)
+        toolbar.update()
         canvas.get_tk_widget().pack(expand=True, fill="both")
         plt.close(fig)
         
