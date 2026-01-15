@@ -55,8 +55,7 @@ Each chart is accessible through the dashboard UI (top buttons) and designed to 
 Prerequisites:
 
 * Python 3.10+ recommended. I tested with Python 3.14.2 on Windows 11. 
-* **SETUP.PY DOES NOT WORK WITH PYTHON 3.14** (llama-cpp does not have a version that recent)
-* *if using python v3.14 or higher install using **"pip install llama-cpp-python"** (will need a C++ compiler)
+* **SETUP.PY DOES NOT WORK WITH PYTHON 3.14** (llama-cpp-python does not have a wheel version that recent)
 * Optional: an environment manager (venv, conda)
 
 Steps:
@@ -80,7 +79,7 @@ source venv/bin/activate
 
 3. Install dependencies:
 
-* Ff you are running python 3.10 through 3.12:
+* If you are running python 3.10 through 3.12:
 ```bash
 python setup.py
 ```
