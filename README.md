@@ -86,8 +86,8 @@ This script installs the packages from `requirements.txt` and configures `llama-
 
 4. (If you want the local AI assistant) Download the model and place it in `models/` (optional — the dashboard works without the AI agent):
 
-* Model used: **Gemma 3 4B (quantized)**
-* Place file name `gemma-3-4b-it-Q4_K_M.gguf` into the `models/` directory.
+* Model used: **Gemma 3 4B (quantized)** (https://huggingface.co/unsloth/gemma-3-4b-it-GGUF/blob/main/gemma-3-4b-it-Q4_K_M.gguf)
+* Place file name `gemma-3-4b-it-Q4_K_M.gguf` into the `models/` directory. It will break if you use other models without changing the code in ai_analyst.py
 
 > **Important:** The AI assistant is a proof of concept. If the model is not present, the app still functions and the visualizations are unchanged.
 
