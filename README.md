@@ -2,7 +2,7 @@
 
 Hi — I'm **Pedro Dechichi Ribeiro**. This repository contains my solution for the **GlobalVision Systems & Data Intern** take‑home challenge. I built a small local dashboard and analysis pipeline that uses Python + SQL to explore the provided anonymized Salesforce data, produce meaningful KPIs, and surface actionable business insights.
 
-> I ran this on Windows 11 with VSCode. Keep that in mind if you use another OS — small platform differences (Tkinter, fonts) may appear.
+> I ran this on Windows 11. Keep that in mind if you use another OS — small platform differences (Tkinter, fonts) may appear.
 
 ---
 
