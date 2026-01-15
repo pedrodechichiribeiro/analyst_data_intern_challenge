@@ -2,6 +2,8 @@
 
 import matplotlib.pyplot as plt
 import pandas as pd
+import numpy as np
+import matplotlib.dates as mdates
 
 class GraphLibrary:
     def __init__(self, db_manager):
@@ -350,35 +352,61 @@ class GraphLibrary:
         # Resample to weekly to smooth out noise
         df_weekly = df.resample('W').sum().reset_index()
         
-        # Plotting
-        ax.plot(df_weekly['date'], df_weekly['count'], marker='o', linestyle='-', color="#4291c5")
+        ax.plot(df_weekly['date'], df_weekly['count'], marker='o', linestyle='-', color="#4291c5", label="Actual Volume")
+        
+        if len(df_weekly) > 1:
+            # Convert dates to numbers for regression
+            dates_num = mdates.date2num(df_weekly['date'])
+            
+            # Calculate Linear Regression (1st degree polynomial = straight line)
+            # z returns [slope, intercept]
+            z = np.polyfit(dates_num, df_weekly['count'], 1) 
+            p = np.poly1d(z)
+            
+            # Plot the 'Normalized' Trend Line for existing data
+            ax.plot(df_weekly['date'], p(dates_num), "r--", alpha=0.6, linewidth=2, label="Trend")
+            
+            # Calculate Future Projection (e.g., next 4 weeks)
+            last_date = df_weekly['date'].iloc[-1]
+            future_dates = pd.date_range(start=last_date, periods=5, freq='W')[1:] # Generate 4 new weeks
+            future_num = mdates.date2num(future_dates)
+            
+            # Plot the Projection
+            ax.plot(future_dates, p(future_num), "r:", alpha=0.6, linewidth=2, label="Projected Growth")
+            
+            # Add legend to distinguish lines
+            ax.legend()
+
         ax.set_title('Weekly Ticket Volume Trend')
         ax.set_ylabel('New Cases (Weekly)')
-        ax.grid(True)
+        ax.grid(True, alpha=0.3)
         
-        import matplotlib.dates as mdates
         ax.xaxis.set_major_formatter(mdates.DateFormatter('%b %Y'))
         
         # 7.1 - AI CONTEXT 
         
         if len(df_weekly) >= 2:
-            # Compare first 4 weeks average vs last 4 weeks average to perceive any ongoing trends
             start_avg = df_weekly.head(4)['count'].mean()
             end_avg = df_weekly.tail(4)['count'].mean()
             
-            # Protect against division by zero
             if start_avg > 0:
                 growth_pct = ((end_avg - start_avg) / start_avg) * 100
             else:
                 growth_pct = 100 if end_avg > 0 else 0
             
-            trend_desc = "Surging" if growth_pct > 20 else "Stable" if abs(growth_pct) < 10 else "Dropping"
-            
+            if growth_pct > 20:
+                trend_desc = "Surging"
+            elif growth_pct > 10:
+                trend_desc = "Growing"  # Covers +10% to +20%
+            elif growth_pct < -10:
+                trend_desc = "Dropping" # Covers < -10%
+            else:
+                trend_desc = "Stable"   # Covers -10% to +10%
+                
+            direction_str = "INCREASE" if growth_pct > 0 else "DECREASE"
             data_context = (
                 f"Trend Analysis ({len(df_weekly)} weeks observed): "
-                f"Start Average: {start_avg:.1f} cases/week. "
-                f"Recent Average: {end_avg:.1f} cases/week. "
-                f"Net Change: {growth_pct:+.1f}%. "
+                f"Net Change: {growth_pct:.1f}% ({direction_str}). "
                 f"Classification: {trend_desc}."
             )
         else:

@@ -12,13 +12,13 @@ import customtkinter as ctk
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import matplotlib.pyplot as plt
 
-# Logic modules from your files
+# Logic modules from files
 from data_manager import DataManager
 from graphs import GraphLibrary
 from ai_analyst import AIAnalyst
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
 
-# Set global appearance to Dark and Modern
+# Dark and Modern
 ctk.set_appearance_mode("dark")
 ctk.set_default_color_theme("blue")
 
@@ -26,7 +26,7 @@ class AnalyticsApp(ctk.CTk):
     def __init__(self):
         super().__init__()
 
-        self.title("Enterprise AI Analytics Portal")
+        self.title("SQL, Python and AI Powered Data Analysis Tool")
         self.geometry("1600x900")
         
         # Initialize Logic Modules
@@ -55,7 +55,7 @@ class AnalyticsApp(ctk.CTk):
         self.grid_columnconfigure(0, weight=1)
         self.grid_rowconfigure(1, weight=1)
 
-        # 1. NAVBAR
+        # 1. "NAVBAR"
         self.nav_frame = ctk.CTkFrame(self, height=80, fg_color="#1a1c1e", corner_radius=0)
         self.nav_frame.grid(row=0, column=0, sticky="ew")
         
@@ -67,9 +67,7 @@ class AnalyticsApp(ctk.CTk):
         self.content_frame = ctk.CTkFrame(self, fg_color="transparent")
         self.content_frame.grid(row=1, column=0, sticky="nsew", padx=10, pady=10) # Reduced padding
         
-        # --- OPTIMIZED WEIGHTS (3:1 Ratio) ---
-        # 75% Graph (Column 0), 25% Sidebar (Column 1)
-        # This makes the graph much bigger and the sidebar slimmer
+        # 75% Graph (Column 0), 25% Sidebar 
         self.content_frame.grid_columnconfigure(0, weight=3) 
         self.content_frame.grid_columnconfigure(1, weight=1) 
         self.content_frame.grid_rowconfigure(0, weight=1)
@@ -81,15 +79,15 @@ class AnalyticsApp(ctk.CTk):
         self.graph_label = ctk.CTkLabel(self.graph_container, text="Data Visualization", font=("Inter", 20, "bold"))
         self.graph_label.pack(pady=(10, 5))
 
-        # Reduced padding inside the container to maximize graph area
+        # Maximizing graph area
         self.canvas_frame = ctk.CTkFrame(self.graph_container, fg_color="#ffffff", corner_radius=8)
         self.canvas_frame.pack(expand=True, fill="both", padx=10, pady=10)
 
-        # RIGHT SIDE: SIDEBAR
+        # RIGHT SIDE SIDEBAR
         self.side_panel = ctk.CTkFrame(self.content_frame, fg_color="transparent")
         self.side_panel.grid(row=0, column=1, sticky="nsew") 
         
-        # A. Graph Summary Section
+        # Graph Summary Section
         self.info_container = ctk.CTkFrame(self.side_panel, fg_color="#24282c")
         self.info_container.pack(fill="x", pady=(0, 10))
         
@@ -97,7 +95,7 @@ class AnalyticsApp(ctk.CTk):
         self.info_text = ctk.CTkLabel(self.info_container, text="Select a report...", font=("Inter", 13), wraplength=350, justify="left")
         self.info_text.pack(pady=(0, 15), padx=15, anchor="w")
 
-        # B. AI Insights Section
+        # AI Insights Section
         self.ai_container = ctk.CTkFrame(self.side_panel, fg_color="#24282c")
         self.ai_container.pack(expand=True, fill="both")
         
@@ -146,7 +144,7 @@ class AnalyticsApp(ctk.CTk):
         )
         self.disclaimer_label.pack(side="bottom", pady=(0, 15), padx=15, fill="x")
 
-        # BIND RESIZE EVENT
+        # BIND RESIZING EVENT
         self.ai_container.bind("<Configure>", self.adjust_disclaimer_wrap)
 
     def adjust_disclaimer_wrap(self, event):
@@ -192,8 +190,7 @@ class AnalyticsApp(ctk.CTk):
         self.ai_textbox.insert("0.0", "Ready for analysis...")
         self.ai_textbox.configure(state="disabled") 
         
-        # INCREASED FIGURE SIZE: (9, 6)
-        # This forces Matplotlib to generate a larger image initially, filling the larger container better.
+        # Forcing Matplotlib to generate a larger image initially, filling the larger container better.
         fig, ax = plt.subplots(figsize=(9, 6), dpi=100)
         
         self.current_system_prompt, self.current_data_context = plot_func(ax)
@@ -214,7 +211,7 @@ class AnalyticsApp(ctk.CTk):
 
         self.ai_textbox.configure(state="normal")
         self.ai_textbox.delete("0.0", "end")
-        self.ai_textbox.insert("0.0", "Crunching data via Gemma 3...")
+        self.ai_textbox.insert("0.0", "Analyst is thinking...")
         self.update_idletasks() 
 
         response = self.ai_analyst.analyze(self.current_system_prompt, self.current_data_context)

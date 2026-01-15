@@ -77,4 +77,5 @@ Enjoy the program!
     - **CustomTkinter** (GUI and dashboard)
     - **Matplotlib** (graph and chart plotting)
     - **Pandas** (data analysis and manipulation) 
+    - **Numby** (graph normalization) 
     - **llama-cpp-python** (AI agent implementation)
