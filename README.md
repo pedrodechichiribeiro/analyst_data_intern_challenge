@@ -49,6 +49,8 @@ In an attempt to differentiate myself from other candidates, I've implemented a 
 
 # SETTING IT UP:
 
+## 0. Have python installed
+
 ## 1. Clone this repository 
 
 - https://github.com/pedrodechichiribeiro/analyst_data_intern_challenge
