@@ -1,26 +1,37 @@
-# This is the SQL handler, initializing the datasets as a in-memory DB, sending and receiving SQL commands.
-
 import pandas as pd
 import sqlite3
 from pathlib import Path
 
-BASE_DIR = Path(__file__).resolve().parent.parent
-DATA_DIR = BASE_DIR / "data"
-
-
 class DataManager:
     def __init__(self):
-        self.conn = sqlite3.connect(':memory:') # A SQL database (and it's connection) is generated in the RAM memory of the device;
+        self.conn = sqlite3.connect(':memory:')
 
     def load_data(self):
-        """Reads JSON files and builds SQL tables."""
         try:
-            print("System initializing...")
+            print("Initializing Data Manager...")
             
-            # First the JSON is read, using panda, turning it into workable dataframes of the cases and accounts
+            # Smart Path Search
+            current_path = Path(__file__).resolve()
+            search_paths = [
+                current_path.parent,             # Same dir
+                current_path.parent / "data",    # ./data
+                current_path.parent.parent / "data", # ../data
+                Path.cwd() / "data"              # CWD/data
+            ]
+            
+            data_dir = None
+            for p in search_paths:
+                if (p / "support_cases_anonymized.json").exists():
+                    data_dir = p
+                    break
+            
+            if not data_dir:
+                print("CRITICAL: Data files not found.")
+                print(f"Searched in: {[str(p) for p in search_paths]}")
+                return False
 
-            cases_path = DATA_DIR / "support_cases_anonymized.json"
-            accounts_path = DATA_DIR / "accounts_anonymized.json"
+            cases_path = data_dir / "support_cases_anonymized.json"
+            accounts_path = data_dir / "accounts_anonymized.json"
 
             cases = pd.read_json(cases_path)
             accounts = pd.read_json(accounts_path, convert_dates=["account_created_date"])
@@ -28,21 +39,15 @@ class DataManager:
             cases['case_created_date'] = pd.to_datetime(cases['case_created_date'])
             cases['case_closed_date'] = pd.to_datetime(cases['case_closed_date'])
 
-            # The dataframes are initialized in system memory as a SQL table for faster, optmized, access.
-            
             cases.to_sql('cases', self.conn, index=False, if_exists='replace')
             accounts.to_sql('accounts', self.conn, index=False, if_exists='replace')
             
-            print(f"Database Ready. Loaded {len(cases)} cases and {len(accounts)} accounts.")
+            print(f"Database Loaded: {len(cases)} cases, {len(accounts)} accounts.")
             return True
             
-        except ValueError as e:
-            print(f"Error reading data: {e}")
-            return False
         except Exception as e:
-            print(f"An unexpected error occurred: {e}")
+            print(f"Data Load Error: {e}")
             return False
 
     def get_query(self, sql_query):
-        """Helper to run SQL and return a Pandas DataFrame."""
         return pd.read_sql(sql_query, self.conn)

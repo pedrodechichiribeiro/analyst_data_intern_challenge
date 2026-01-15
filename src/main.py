@@ -1,22 +1,12 @@
-# Hi, my name is Pedro.
-# I'm—as of writing this—a Computer Engineering student at UFU ("Universidade Federal de Uberlândia"), from Brazil.
-# This is my solution for the "System & Data Intern Take Home" challenge from GlobalVision.
-# In an attempt to go beyond what was asked, I've implemented an AI-powered analysis tool, 
-# utilizing SQL and Python as a base for data analysis and processing, dynamically interpreting 
-# the graphs and charts for real-time analysis.
-# Regardless of whether this solution will make the cut for the internship or not, I have to say 
-# this experience was rather fun!
-# If you are reading this, I sincerely hope you enjoy the app. Any feedback is appreciated.
-
 import customtkinter as ctk
-from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
 import matplotlib.pyplot as plt
+import threading 
 
-# Logic modules from files
+# Logic modules
 from data_manager import DataManager
 from graphs import GraphLibrary
 from ai_analyst import AIAnalyst
-from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
 
 # Dark and Modern
 ctk.set_appearance_mode("dark")
@@ -31,9 +21,11 @@ class AnalyticsApp(ctk.CTk):
         
         # Initialize Logic Modules
         self.db_manager = DataManager()
-        self.db_manager.load_data()
+        if not self.db_manager.load_data():
+            self.show_error("Data Error", "Could not load data files.\nCheck console for details.")
+
         self.graph_lib = GraphLibrary(self.db_manager)
-        self.ai_analyst = AIAnalyst()
+        self.ai_analyst = AIAnalyst() 
 
         self.current_system_prompt = ""
         self.current_data_context = ""
@@ -55,7 +47,7 @@ class AnalyticsApp(ctk.CTk):
         self.grid_columnconfigure(0, weight=1)
         self.grid_rowconfigure(1, weight=1)
 
-        # 1. "NAVBAR"
+        # 1. NAVBAR
         self.nav_frame = ctk.CTkFrame(self, height=80, fg_color="#1a1c1e", corner_radius=0)
         self.nav_frame.grid(row=0, column=0, sticky="ew")
         
@@ -65,9 +57,8 @@ class AnalyticsApp(ctk.CTk):
 
         # 2. MAIN CONTENT AREA
         self.content_frame = ctk.CTkFrame(self, fg_color="transparent")
-        self.content_frame.grid(row=1, column=0, sticky="nsew", padx=10, pady=10) # Reduced padding
+        self.content_frame.grid(row=1, column=0, sticky="nsew", padx=10, pady=10)
         
-        # 75% Graph (Column 0), 25% Sidebar 
         self.content_frame.grid_columnconfigure(0, weight=3) 
         self.content_frame.grid_columnconfigure(1, weight=1) 
         self.content_frame.grid_rowconfigure(0, weight=1)
@@ -79,7 +70,6 @@ class AnalyticsApp(ctk.CTk):
         self.graph_label = ctk.CTkLabel(self.graph_container, text="Data Visualization", font=("Inter", 20, "bold"))
         self.graph_label.pack(pady=(10, 5))
 
-        # Maximizing graph area
         self.canvas_frame = ctk.CTkFrame(self.graph_container, fg_color="#ffffff", corner_radius=8)
         self.canvas_frame.pack(expand=True, fill="both", padx=10, pady=10)
 
@@ -101,7 +91,6 @@ class AnalyticsApp(ctk.CTk):
         
         ctk.CTkLabel(self.ai_container, text="AI Analyst Insights", font=("Inter", 16, "bold"), text_color="#16a085").pack(pady=10, padx=15, anchor="w")
         
-        # Expand=True fills the vertical space
         self.ai_textbox = ctk.CTkTextbox(
             self.ai_container, 
             font=("Inter", 14), 
@@ -122,7 +111,7 @@ class AnalyticsApp(ctk.CTk):
         )
         self.ai_button.pack(pady=(5, 10), padx=15, fill="x")
 
-        # Disclaimer
+        # Disclaimer (RESTORED ORIGINAL TEXT)
         disclaimer_text = (
             "NOTE: The data_context and system_instructions changes according with the data selected for analysis, "
             "i.e. different data will change so the generated texts maintains a minimum logic. A bigger data_context, "
@@ -148,10 +137,13 @@ class AnalyticsApp(ctk.CTk):
         self.ai_container.bind("<Configure>", self.adjust_disclaimer_wrap)
 
     def adjust_disclaimer_wrap(self, event):
-        """Dynamically updates the text wrap limit based on container width."""
         new_wrap_length = event.width - 40
         if new_wrap_length > 100:
             self.disclaimer_label.configure(wraplength=new_wrap_length)
+
+    def show_error(self, title, message):
+        import tkinter.messagebox as msg
+        msg.showerror(title, message)
 
     def setup_nav_buttons(self):
         reports = [
@@ -185,40 +177,51 @@ class AnalyticsApp(ctk.CTk):
         desc = self.descriptions.get(report_name, "No description available.")
         self.info_text.configure(text=desc)
 
+        # Reset AI Box
         self.ai_textbox.configure(state="normal") 
         self.ai_textbox.delete("0.0", "end")
         self.ai_textbox.insert("0.0", "Ready for analysis...")
         self.ai_textbox.configure(state="disabled") 
         
-        # Forcing Matplotlib to generate a larger image initially, filling the larger container better.
         fig, ax = plt.subplots(figsize=(9, 6), dpi=100)
-        
         self.current_system_prompt, self.current_data_context = plot_func(ax)
-        
-        # Tight layout minimizes white borders
         fig.tight_layout()
         
         canvas = FigureCanvasTkAgg(fig, master=self.canvas_frame)
         canvas.draw()
-        toolbar = NavigationToolbar2Tk(canvas, self.canvas_frame)
-        toolbar.update()
+        NavigationToolbar2Tk(canvas, self.canvas_frame).update()
         canvas.get_tk_widget().pack(expand=True, fill="both")
         plt.close(fig)
         
+    # --- THREADING LOGIC ---
     def run_ai_analysis(self):
         if not self.current_data_context:
             return
-
+            
+        # 1. Update UI to "Loading" state
         self.ai_textbox.configure(state="normal")
         self.ai_textbox.delete("0.0", "end")
-        self.ai_textbox.insert("0.0", "Analyst is thinking...")
-        self.update_idletasks() 
+        self.ai_textbox.insert("0.0", "Analyst is thinking... (This may take a moment)")
+        self.ai_textbox.configure(state="disabled")
+        self.ai_button.configure(state="disabled", text="Analyzing...")
 
+        # 2. Start Thread
+        thread = threading.Thread(target=self._ai_worker, daemon=True)
+        thread.start()
+
+    def _ai_worker(self):
+        # Background thread
         response = self.ai_analyst.analyze(self.current_system_prompt, self.current_data_context)
-        
+        # Schedule update on main thread
+        self.after(0, self._ai_complete, response)
+
+    def _ai_complete(self, response):
+        # Main thread UI update
+        self.ai_textbox.configure(state="normal")
         self.ai_textbox.delete("0.0", "end")
         self.ai_textbox.insert("0.0", response)
         self.ai_textbox.configure(state="disabled")
+        self.ai_button.configure(state="normal", text="Generate Deep Analysis")
 
 if __name__ == "__main__":
     app = AnalyticsApp()
