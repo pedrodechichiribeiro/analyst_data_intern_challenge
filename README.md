@@ -67,7 +67,7 @@ In an attempt to differentiate myself from other candidates, I've implemented a 
 
 This installs **"requirements.txt"** and **llama-cpp-python** without the need for a C++ compiler. Await for the installation to finish, it's only needed on the first time configuration
 
-## 4. Run "python /src/main.py"
+## 4. Run "python src/main.py"
 
 You can select the graphs/charts options from the buttons on the top of the screen and generate AI insights by clicking on the button on the bottom right (wait some time if your device is older for generation). Enjoy the app!
 
