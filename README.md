@@ -1,10 +1,10 @@
 # Summary
 
-    Hi! My name is Pedro Dechichi Ribeiro. I'm computer engineering student on the "Universidade Federal de Uberlândia" (UFU for short) in Brazil.
+Hi! My name is Pedro Dechichi Ribeiro. I'm computer engineering student on the "Universidade Federal de Uberlândia" (UFU for short) in Brazil.
 
-    This repository is my submission for the "GlobalVision Systems & Data Intern Take Home". The goal was, given the anonymized datasets provided, utilize SQL and Python to produce insightful data visualizations that could produce meaningful support for business decisions. 
+This repository is my submission for the "GlobalVision Systems & Data Intern Take Home". The goal was, given the anonymized datasets provided, utilize SQL and Python to produce insightful data visualizations that could produce meaningful support for business decisions. 
 
-    My solution was to create a responsive dashboard where the user would have acess for 9 different graphs and charts that i've judged had important takeaways from the displayed data. They are:
+My solution was to create a responsive dashboard where the user would have acess for 9 different graphs and charts that i've judged had important takeaways from the displayed data. They are:
 
 ### 1 - Top Products by Ticket Number: 
 - Clearly identifies the top 10 most common products on the datasets, ranking them on a bar-chart. Standard metric to understand the demand (or lack there of) of each available service by GlobalVision
@@ -33,15 +33,36 @@
 ### 9 - Backlog Growth:
 - A dual-line area chart comparing the total number of cases opened versus cases closed over time. The diverging space between these lines visually represents the growing backlog. This is the most critical metric for resource planning, as a widening gap indicates the team is overwhelmed and cannot keep up with the incoming rate of work.
 
-    In an attempt to differentiate myself from other candidates, I've implemented a local AI agent for data analysis. The model used is **Gemma 3 4B (quantized)**. It strikes a balance between performance and accessibility: large enough to minimize hallucinations, yet small enough to run on widely available hardware.
-    Please note that this acts more as a 'proof of concept' than a final implementation. Since I do not know the specifications of the device running this code, I could not fully optimize the model for speed or cohesion. It may run slowly on older machines, but it should work on any system meeting these minimum requirements:
+---
 
-    - 8GB DDR4 RAM (16GB recommended, as the DB is loaded into memory)
-    - 3gb disk space (recommend SSD)
-    - Ryzen 3600G / Intel i5-8400
+In an attempt to differentiate myself from other candidates, I've implemented a local AI agent for data analysis. The model used is **Gemma 3 4B (quantized)**. It strikes a balance between performance and accessibility: large enough to minimize hallucinations, yet small enough to run on widely available hardware. Please note that this acts more as a 'proof of concept' than a final implementation. Since I do not know the specifications of the device running this code, I could not fully optimize the model for speed or cohesion. It may run slowly on older machines, but it should work on any system meeting these minimum requirements:
+
+- 8GB DDR4 RAM (16GB recommended, as the DB is loaded into memory)
+- 3gb disk space (recommend SSD)
+- Ryzen 3600G / Intel i5-8400
 
     **Note:** Even if the AI does not load, the graphs will still function normally as intended.
 
+---
+
 # SETTING IT UP:
 
-## 1. Clone this repository
+## 1. Clone this repository 
+
+- https://github.com/pedrodechichiribeiro/analyst_data_intern_challenge
+
+## 2. Download Gemma 3:
+
+- 2.1: Go to **"https://huggingface.co/unsloth/gemma-3-4b-it-GGUF/tree/main"**
+- 2.2: Download  the specific model **"gemma-3-4b-it-Q4_K_M.gguf"**
+- 2.3: Place it on the **"models" folder**
+
+**IMPORTANT!**: IT WONT WORK WITH ANY OTHER MODEL WITHOUT CODE CHANGES (on ai_analyst.py)
+
+## 3. Run "setup.py"
+
+This installs **"requirements.txt"** and **llama-cpp-python** without the need for a C++ compiler.
+
+## 4. Run "main.py"
+
+Enjoy the program!
