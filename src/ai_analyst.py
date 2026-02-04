@@ -1,92 +1,40 @@
 import os
-from pathlib import Path
-
-# Robust path finding
-current_path = Path(__file__).resolve()
-BASE_DIR = current_path.parent.parent
-# Check logic for 'models' folder in various locations
-possible_paths = [
-    current_path.parent / "models", # Same folder/models
-    BASE_DIR / "models",            # Parent/models
-    BASE_DIR / "src" / "models"     # Explicit src/models
-]
-
-MODELS_DIR = None
-for p in possible_paths:
-    if p.exists():
-        MODELS_DIR = p
-        break
-
-try:
-    from llama_cpp import Llama
-    AI_AVAILABLE = True
-except ImportError:
-    print("WARNING: 'llama-cpp-python' not found. AI disabled.")
-    AI_AVAILABLE = False
-    Llama = None
+from agno.agent import Agent
+from agno.models.google import Gemini
 
 class AIAnalyst:
     def __init__(self):
-        self.llm = None
-        self.model_filename = "gemma-3-4b-it-Q4_K_M.gguf"
-        
-        if not AI_AVAILABLE:
-            return
+        # Configure a chave aqui se necessário
+        os.environ["GOOGLE_API_KEY"] = "AIzaSyACwcrqpecdgdIa4uJ-ndeb_fDM3jrZ-UY" 
 
-        if MODELS_DIR is None:
-            print("ERROR: 'models' directory not found.")
-            return
-
-        self.model_path = MODELS_DIR / self.model_filename
-        
-        if not self.model_path.exists():
-            print(f"ERROR: Model file missing at {self.model_path}")
-            print("Please download the .gguf model and place it in the 'models' folder.")
-            return
-
-        try:
-            print(f"Loading AI Model from {self.model_path}...")
-            # n_gpu_layers=-1 attempts to use GPU. If no GPU, it naturally falls back to CPU.
-            self.llm = Llama(
-                model_path=str(self.model_path),
-                n_ctx=2048,      
-                n_batch=512, 
-                n_gpu_layers=-1, 
-                verbose=False     
-            )
-            print("AI Engine Online.")
-
-        except Exception as e:
-            print(f"AI Initialization Failed: {e}")
-            self.llm = None
-
-    def analyze(self, system_instructions, data_context):
-        if not self.llm:
-            if not AI_AVAILABLE:
-                return "Error: AI Library not installed. Please run setup.py."
-            return "Error: AI Model not loaded. Check console for 'models' folder path."
-        
-        full_prompt = f"""<start_of_turn>user
-            INSTRUCTIONS: {system_instructions}
-            STRICT CONTEXT DATA:
-            {data_context}
-            TASK:
-            Provide a concise, professional analysis. 
-            1. Highlight the most critical metric.
-            2. Identify a potential cause.
-            3. Recommend one actionable step.
-            Keep it under 300 words.<end_of_turn>
-            <start_of_turn>model
-        """
-        
-        try:
-            output = self.llm(
-                full_prompt,
-                max_tokens=900,
-                temperature=0.3,
-                stop=["<end_of_turn"]
-            )
-            return output['choices'][0]['text'].strip()
+        self.agent = Agent(
+            # TENTATIVA 1: Versão Estável Específica (Recomendado)
+            model=Gemini(id="gemini-2.5-flash"), 
             
+            # Se a de cima não funcionar, tente esta (Versão 2.0 Experimental - Mais inteligente):
+            # model=Gemini(id="gemini-2.0-flash-exp"),
+
+            description="Você é um Cientista de Dados Sênior especialista em suporte técnico.",
+            instructions=[
+                "Analise os dados fornecidos focando em insights de negócio.",
+                "Seja direto e profissional.",
+                "Não use formatação Markdown (como negrito ou títulos).",
+                "Use texto puro para compatibilidade com a interface gráfica.",
+            ],
+            markdown=False
+        )
+
+    def analyze(self, system_prompt, data_context):
+        try:
+            user_message = (
+                f"CONTEXTO: {system_prompt}\n\n"
+                f"DADOS:\n{data_context}\n\n"
+                "Gere um relatório executivo curto sobre esses dados."
+            )
+            
+            response = self.agent.run(user_message)
+            return response.content
+
         except Exception as e:
-            return f"Generation Error: {str(e)}"
+            # Isso vai ajudar a gente a ver o erro exato na interface se falhar de novo
+            return f"Erro Google Gemini: {str(e)}"
