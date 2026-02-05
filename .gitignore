@@ -4,11 +4,6 @@ __pycache__/
 
 # Virtual Environments
 venv/
-env/
-
-# Large Model Files (Do NOT upload these to GitHub)
-*.gguf
-models/*.gguf
 
 # OS metadata
 .DS_Store

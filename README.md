@@ -1,10 +1,8 @@
-
-
 # README — AI-Powered Data Analysis Dashboard
 
 Hi — I'm **Pedro Dechichi Ribeiro**. This repository contains a data analysis dashboard built with Python, SQL, and **Agno**. It processes anonymized support ticket data to produce meaningful KPIs, visualizations, and actionable business insights using cloud-based AI.
 
-> **Note:** This project was originally a take-home challenge solution. It has since been updated to serve as a proof-of-concept for using **Agno (formerly Phidata)** and **Google Gemini** for automated data reporting.
+> **Note:** This project was originally a take-home challenge solution. It has since been updated to serve as a proof-of-concept for using **Agno** and **Google Gemini** for automated data reporting.
 
 ---
 
@@ -49,6 +47,11 @@ Clicking the "Generate Deep Analysis" button triggers a cloud-based agent. The s
 * A **Google AI Studio API Key** (Free tier available).
 
 ### Installation
+
+0. **If on Windows**
+
+Double click on run.bat and everything will be done automatically, skipping the steps 1-5.
+If it does not work then please do it step by step like below:
 
 1. **Clone the repository:**
 ```bash
