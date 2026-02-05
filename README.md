@@ -1,161 +1,135 @@
-# README — GlobalVision Systems & Data Intern Take Home
 
-Hi — I'm **Pedro Dechichi Ribeiro**. This repository contains my solution for the **GlobalVision Systems & Data Intern** take‑home challenge. I built a small local dashboard and analysis pipeline that uses Python + SQL to explore the provided anonymized Salesforce data, produce meaningful KPIs, and surface actionable business insights.
 
-> I ran this on Windows 11. Keep that in mind if you use another OS — small platform differences (Tkinter, fonts) may appear.
+# README — AI-Powered Data Analysis Dashboard
 
----
+Hi — I'm **Pedro Dechichi Ribeiro**. This repository contains a data analysis dashboard built with Python, SQL, and **Agno**. It processes anonymized support ticket data to produce meaningful KPIs, visualizations, and actionable business insights using cloud-based AI.
 
-## What the challenge asked for (brief)
-
-The original challenge required that you:
-
-1. Load and explore two datasets: `accounts_anonymized.json` and `support_cases_anonymized.json`.
-2. Use Python and SQL to join and process the data and derive useful metrics (SQL should be used for this part).
-3. Produce visualizations that explain those KPIs.
-4. Explain key insights and propose two actionable recommendations.
-5. Submit a Python script/notebook and a short video walkthrough (≤ 5 minutes).
-
-This README adapts the repository to exactly match those instructions and explains how to run and review my submission.
+> **Note:** This project was originally a take-home challenge solution. It has since been updated to serve as a proof-of-concept for using **Agno (formerly Phidata)** and **Google Gemini** for automated data reporting.
 
 ---
 
-## What I built (summary)
+## Project Overview
 
-A responsive local dashboard that exposes **9 visualizations** I judged most valuable from the data. They are:
+This tool is designed to:
 
-1. **Top Products by Ticket Number** — top 10 products by total cases (bar chart).
-2. **Severity Stack** — top 10 products with stacked percentiles for severity levels.
-3. **Case Types** — pie chart grouping minor categories into “Other” for clarity.
-4. **Global Hotspots** — top 10 countries by case volume (geographic focus for staffing).
-5. **Ticket Density Analysis** — cases per unique account (shows regions with high tickets per customer).
-6. **Industry Struggles** — support volume segmented by client industry.
-7. **Volume Over Time** — weekly new-case trend (smoothed to show long-term movement).
-8. **Time to Resolution** — histogram of days-to-close (reveals long-tail cases).
-9. **Backlog Growth** — opened vs closed cases over time (shows backlog divergence).
-
-Each chart is accessible through the dashboard UI (top buttons) and designed to answer a concrete operational question.
+1. **Ingest Data:** Load and explore anonymized JSON datasets (`accounts` and `support_cases`).
+2. **Process via SQL:** Use an in-memory SQLite database to join tables and derive complex metrics.
+3. **Visualize:** Render interactive charts using **CustomTkinter** and Matplotlib.
+4. **Analyze with AI:** Use an **Agno Agent** powered by **Google Gemini** to generate executive summaries and strategic recommendations based on the visualized data.
 
 ---
 
-## How this maps to the challenge parts
+## Features
 
-* **Part 1 — Data Exploration:** The `src/data_manager.py` loads and inspects the JSON files. The dashboard and helper scripts include simple EDA outputs (counts, null checks, sample rows).
+### Visualizations
 
-* **Part 2 — Data Processing (SQL + Python):** All main SQL queries used to create the charts live in `src/graphs.py` and run against an in-memory SQLite instance created in `src/data_manager.py`. I used pandas + sqlite3 for ETL and SQL logic.
+The dashboard exposes **9 key visualizations** accessible via the top navigation bar:
 
-* **Part 3 — Visualizations:** Charts are produced with Matplotlib and rendered in the GUI built with CustomTkinter. The plotting code is in `src/graphs.py` and `src/plot_utils.py`.
+1. **Top Products by Ticket Number** — Volume analysis by product hardware/software.
+2. **Severity Stack** — Severity level distribution per product.
+3. **Case Types** — Categorical distribution of support requests.
+4. **Global Hotspots** — Geographic heat map of case volumes.
+5. **Ticket Density Analysis** — Average tickets per unique account by region.
+6. **Industry Struggles** — Support volume segmented by client market sector.
+7. **Volume Over Time** — Weekly new-case trends (smoothed).
+8. **Time to Resolution** — Histogram of days-to-close.
+9. **Backlog Growth** — Opened vs. Closed case rates over time.
 
-* **Part 4 — Business Insights:** The dashboard includes an AI analysis button (bottom-right) that generates a short summary of insights. I also include a `REPORT.md` (or `INSIGHTS.md`) file in the repo that lists the key findings and two actionable recommendations derived from the data.
+### AI Analyst (Agno + Gemini)
+
+Clicking the "Generate Deep Analysis" button triggers a cloud-based agent. The system sends the specific data context of the currently visible chart to Google Gemini, which acts as a Senior Data Scientist to return actionable insights, trend warnings, and operational advice.
 
 ---
 
-## Setup & run (quick)
+## Setup & Run
 
-Prerequisites:
+### Prerequisites
 
-* Python 3.10+ recommended. I tested with Python 3.14.2 on Windows 11. 
-* **SETUP.PY DOES NOT WORK WITH PYTHON 3.14** (llama-cpp-python does not have a wheel version that recent)
-* Optional: an environment manager (venv, conda)
+* **Python 3.10+** (Tested on Windows 11).
+* A **Google AI Studio API Key** (Free tier available).
 
-Steps:
+### Installation
 
-1. Clone the repository:
-
+1. **Clone the repository:**
 ```bash
 git clone https://github.com/pedrodechichiribeiro/analyst_data_intern_challenge
 cd analyst_data_intern_challenge
+
 ```
 
-2. (Optional but recommended) Create a venv and activate it:
 
+2. **Create and activate a virtual environment:**
 ```bash
-python -m venv venv
 # Windows
+python -m venv venv
 venv\Scripts\activate
+
 # macOS / Linux
+python3 -m venv venv
 source venv/bin/activate
+
 ```
 
-3. Install dependencies:
 
-* If you are running python 3.10 through 3.12:
+3. **Install dependencies:**
 ```bash
-python setup.py
-```
-This script installs the packages from `requirements.txt` and configures `llama-cpp-python` without requiring a local C++ compiler (first-time setup may take a few minutes).
-
-* If you are running python 3.14 or higher get a C++ compiler, ignore setup.py and run:
-
-```bash
-pip install llama-cpp-python
 pip install -r requirements.txt
+
 ```
 
-4. (If you want the local AI assistant) Download the model and place it in `models/` (optional — the dashboard works without the AI agent):
 
-* Model used: **Gemma 3 4B (quantized)** (https://huggingface.co/unsloth/gemma-3-4b-it-GGUF/blob/main/gemma-3-4b-it-Q4_K_M.gguf)
-* Place file name `gemma-3-4b-it-Q4_K_M.gguf` into the `models/` directory. It will break if you use other models without changing the code in ai_analyst.py
+4. **Configure Environment Variables:**
+* Create a file named `.env` in the root directory.
+* Add your Google API key (Get one [here](https://aistudio.google.com/)):
 
-> **Important:** The AI assistant is a proof of concept. If the model is not present, the app still functions and the visualizations are unchanged.
 
-5. Run the app:
+```ini
+GOOGLE_API_KEY=your_api_key_starts_with_AIza...
 
+```
+
+
+5. **Run the App:**
 ```bash
 python src/main.py
+
 ```
 
-Use the top buttons to switch between charts. Click the bottom-right button to generate an AI-assisted summary (if model available).
+
 
 ---
 
-## Files of interest
+## Files of Interest
 
-* `src/main.py` — app entrypoint and UI layout.
-* `src/data_manager.py` — loads JSON files, builds the in-memory SQLite DB, and prepares dataframes.
-* `src/graphs.py` — SQL queries and plotting logic for each chart (primary SQL is here).
-* `src/plot_utils.py` — plotting helpers and formatting.
-* `requirements.txt` — Python dependencies.
-* `models/` — optional folder to drop the Gemma model.
-* `accounts_anonymized.json` and `support_cases_anonymized.json` — the two provided datasets (place them in the repo root or `data/` according to the script expectations).
-
----
-
-## Minimum recommended hardware
-
-The AI assistant is the heaviest optional component. Minimum recommended specs to run everything comfortably:
-
-* **16 GB RAM** (8 GB _may_ work but will be slow if AI loads)
-* **~3 GB disk** (SSD recommended)
-* CPU roughly equivalent to Ryzen 3600G / Intel i5-8400 or newer.
-* GPU recommended, specially with CUDA cores. Just makes generataing faster
-
-My dev machine: Intel i5-14600KF, Radeon 9060 16GB, 32 GB DDR5 — I used that to test performance.
+* `src/main.py` — Application entry point and UI layout.
+* `src/ai_analyst.py` — **Agno Agent configuration.** Handles the connection to Google Gemini and prompts the model with context-aware instructions.
+* `src/data_manager.py` — Loads JSON files and manages the SQLite in-memory database.
+* `src/graphs.py` — Contains the raw SQL queries and Matplotlib plotting logic.
+* `src/plot_utils.py` — Helper functions for graph styling.
+* `requirements.txt` — Project dependencies (Agno, CustomTkinter, Matplotlib, etc.).
 
 ---
 
-## Notes, caveats & small details
+## Hardware Requirements
 
-* The project favors clarity and reproducibility: SQL queries are intentionally explicit and placed together in `graphs.py` for review.
-* The AI assistant is **optional** and only included as a differentiator; it’s not required to reproduce the visual insights.
-* If you run into `Tkinter` problems on Linux, install `python3-tk` (e.g. `sudo apt-get install python3-tk` or distro equivalent).
+Unlike the previous version of this project which ran a 4GB LLM locally, this version offloads intelligence to the cloud.
 
----
-
-## Quick reproduction commands
-
-```bash
-# install and run (assumes Python is present)
-python setup.py
-python src/main.py
-```
-
-If you prefer to run a single script that generates PNG exports of all charts (no GUI), see `src/export_charts.py` (it runs the same SQL queries and saves outputs in `outputs/`).
+* **RAM:** 4GB+ is sufficient.
+* **Internet:** Active connection required for AI features.
+* **Disk:** Minimal (< 200MB).
 
 ---
 
-## Final thoughts
+## Notes & Caveats
 
-Thanks for taking a look! I tried to preserve useful implementation details while making the repository explicitly match the take‑home's requirements: Python + SQL processing, visualizations, and a concise set of business recommendations. Even if doesn't get me selected it was a rather fun quick side project.
+* **API Usage:** The AI features use the Google Gemini API. Ensure you are within the free tier limits or have billing configured if you plan to spam requests.
+* **Privacy:** Data snippets (numbers and text labels) are sent to the Google API for analysis. Do not use this configuration with strictly confidential PII without reviewing Google's data privacy policies for the API.
+* **Linux Users:** If you encounter `Tkinter` errors, ensure `python3-tk` is installed via your package manager.
+
+---
+
+## Final Thoughts
+
+This project demonstrates how easily modern Agentic frameworks like **Agno** can be integrated into legacy desktop applications to provide "Intelligence as a Service," replacing complex local setups with lightweight API calls.
 
 — Pedro
