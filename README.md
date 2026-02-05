@@ -50,7 +50,8 @@ Clicking the "Generate Deep Analysis" button triggers a cloud-based agent. The s
 
 0. **If on Windows**
 
-Double click on run.bat and everything will be done automatically, skipping the steps 1-5.
+Update API key and name of the file on **.env**
+Then double click on run.bat and everything will be done automatically, skipping the steps 1 through 5.
 If it does not work then please do it step by step like below:
 
 1. **Clone the repository:**
