@@ -1,92 +1,71 @@
 import os
-from pathlib import Path
+from dotenv import load_dotenv
+from agno.agent import Agent
+from agno.models.google import Gemini
 
-# Robust path finding
-current_path = Path(__file__).resolve()
-BASE_DIR = current_path.parent.parent
-# Check logic for 'models' folder in various locations
-possible_paths = [
-    current_path.parent / "models", # Same folder/models
-    BASE_DIR / "models",            # Parent/models
-    BASE_DIR / "src" / "models"     # Explicit src/models
-]
-
-MODELS_DIR = None
-for p in possible_paths:
-    if p.exists():
-        MODELS_DIR = p
-        break
-
-try:
-    from llama_cpp import Llama
-    AI_AVAILABLE = True
-except ImportError:
-    print("WARNING: 'llama-cpp-python' not found. AI disabled.")
-    AI_AVAILABLE = False
-    Llama = None
+# Load environment variables (API keys)
+load_dotenv()
 
 class AIAnalyst:
     def __init__(self):
-        self.llm = None
-        self.model_filename = "gemma-3-4b-it-Q4_K_M.gguf"
-        
-        if not AI_AVAILABLE:
-            return
-
-        if MODELS_DIR is None:
-            print("ERROR: 'models' directory not found.")
-            return
-
-        self.model_path = MODELS_DIR / self.model_filename
-        
-        if not self.model_path.exists():
-            print(f"ERROR: Model file missing at {self.model_path}")
-            print("Please download the .gguf model and place it in the 'models' folder.")
-            return
-
-        try:
-            print(f"Loading AI Model from {self.model_path}...")
-            # n_gpu_layers=-1 attempts to use GPU. If no GPU, it naturally falls back to CPU.
-            self.llm = Llama(
-                model_path=str(self.model_path),
-                n_ctx=2048,      
-                n_batch=512, 
-                n_gpu_layers=-1, 
-                verbose=False     
-            )
-            print("AI Engine Online.")
-
-        except Exception as e:
-            print(f"AI Initialization Failed: {e}")
-            self.llm = None
-
-    def analyze(self, system_instructions, data_context):
-        if not self.llm:
-            if not AI_AVAILABLE:
-                return "Error: AI Library not installed. Please run setup.py."
-            return "Error: AI Model not loaded. Check console for 'models' folder path."
-        
-        full_prompt = f"""<start_of_turn>user
-            INSTRUCTIONS: {system_instructions}
-            STRICT CONTEXT DATA:
-            {data_context}
-            TASK:
-            Provide a concise, professional analysis. 
-            1. Highlight the most critical metric.
-            2. Identify a potential cause.
-            3. Recommend one actionable step.
-            Keep it under 300 words.<end_of_turn>
-            <start_of_turn>model
         """
-        
-        try:
-            output = self.llm(
-                full_prompt,
-                max_tokens=900,
-                temperature=0.3,
-                stop=["<end_of_turn"]
-            )
-            return output['choices'][0]['text'].strip()
+        Initializes the Agno Agent with specific fine-tuning for 
+        IT Support and Data Analysis contexts using Gemini 2.5 Flash.
+        """
+        self.agent = Agent(
+            model=Gemini(id="gemini-2.5-flash"), 
             
+            # --- FINE TUNING & PERSONA ---
+            description=(
+                "You are a Senior Data Analyst specializing in IT Service Desk operations, "
+                "Customer Support metrics, and Business Intelligence."
+            ),
+            
+            # --- CONTEXT & INSTRUCTIONS ---
+            instructions=[
+                # 1. Operational Context
+                "You are analyzing data from a Technical Support Dashboard.",
+                "Your analysis should focus on operational efficiency, team performance, and product quality.",
+                
+                # 2. Specific Analytical Behaviors (Matching your App's logic)
+                "If analyzing 'Backlog', warn about diverging trends (incoming > resolved).",
+                "If analyzing 'Severity', distinguish between high-volume noise vs. critical blockers.",
+                "If analyzing 'Resolution Time', identify inefficiencies or 'stale' tickets.",
+                "If analyzing 'Hotspots', suggest regional resource allocation.",
+                "If analyzing 'Volume Trend', identify if the load is scaling up or stabilizing.",
+                
+                # 3. Tone and Style
+                "Provide actionable insights, not just descriptions of the numbers.",
+                "Be concise, professional, and executive.",
+                
+                # 4. Technical Constraints (Crucial for Tkinter UI)
+                "STRICT FORMATTING RULE: Do NOT use Markdown formatting.",
+                "Do NOT use bold (**text**), headers (##), or code blocks.",
+                "Use standard plain text with line breaks and hyphens (-) for lists.",
+            ],
+            markdown=False
+        )
+
+    def analyze(self, system_prompt, data_context):
+        """
+        Sends the specific graph context and raw data to the Cloud AI.
+        """
+        try:
+            # Structuring the prompt to clearly separate objective from data
+            user_message = (
+                f"--- ANALYSIS OBJECTIVE ---\n"
+                f"{system_prompt}\n\n"
+                
+                f"--- DATASET ---\n"
+                f"{data_context}\n\n"
+                
+                f"--- REQUEST ---\n"
+                "Based on the objective and the dataset above, generate a deep insight report. "
+                "Highlight risks, trends, and recommended actions."
+            )
+            
+            response = self.agent.run(user_message)
+            return response.content
+
         except Exception as e:
-            return f"Generation Error: {str(e)}"
+            return f"AI Service Error: {str(e)}"

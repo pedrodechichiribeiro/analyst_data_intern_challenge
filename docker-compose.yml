@@ -1,0 +1,55 @@
+# ============================================================
+# docker-compose.yml — AI-Powered Data Analysis Dashboard
+# ============================================================
+#
+# ANTES de rodar, instale o xhost na sua máquina host:
+#
+#   Debian/Ubuntu:  sudo apt install x11-xserver-utils
+#   Fedora (<=42):  sudo dnf install xorg-x11-server-utils
+#   Fedora (43+):   sudo dnf install xhost
+#                   (se não encontrar: sudo dnf install xorg-x11-xinit)
+#   Arch:           sudo pacman -S xorg-xhost
+#   macOS:          brew install --cask xquartz  (inclui o xhost)
+#
+# COMO RODAR:
+#
+#   Linux / WSL2 (Windows 11 com WSLg):
+#     xhost +local:docker && docker compose up --build
+#
+#   Windows 10 via WSL2 (requer VcXsrv com "Disable access control"):
+#     export DISPLAY=$(cat /etc/resolv.conf | grep nameserver | awk '{print $2}'):0.0
+#     xhost +local:docker && docker compose up --build
+#
+#   macOS (requer XQuartz — habilite "Allow network clients" em Preferências > Segurança):
+#     xhost +localhost && DISPLAY=host.docker.internal:0 docker compose up --build
+#
+# ============================================================
+
+services:
+  dashboard:
+    build: .
+    image: analyst-dashboard:latest
+    container_name: analyst_dashboard
+
+    # Forward display to the host X server
+    # WSLg sets $DISPLAY automatically; fallback covers Windows/macOS
+    environment:
+      - DISPLAY=${DISPLAY:-host.docker.internal:0.0}
+
+    # Injects GOOGLE_API_KEY from the .env file in the project root
+    env_file:
+      - .env
+
+    volumes:
+      - ./src:/app/src
+      - ./data:/app/data
+      # X11 Unix socket — used on Linux/WSL, safely ignored on Windows/macOS
+      - /tmp/.X11-unix:/tmp/.X11-unix:rw
+
+    # Required for X11 MIT-SHM shared memory extension on Linux
+    ipc: host
+
+    stdin_open: true
+    tty: true
+
+    restart: "no"
