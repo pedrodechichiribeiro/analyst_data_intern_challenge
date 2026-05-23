@@ -216,7 +216,8 @@ class AnalyticsApp(ctk.CTk):
         self.after(0, self._ai_complete, response)
 
     def _ai_complete(self, response):
-        # Main thread UI update
+        if not self.winfo_exists(): 
+            return 
         self.ai_textbox.configure(state="normal")
         self.ai_textbox.delete("0.0", "end")
         self.ai_textbox.insert("0.0", response)

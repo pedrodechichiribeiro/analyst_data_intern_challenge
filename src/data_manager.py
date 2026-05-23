@@ -49,5 +49,6 @@ class DataManager:
             print(f"Data Load Error: {e}")
             return False
 
-    def get_query(self, sql_query):
-        return pd.read_sql(sql_query, self.conn)
+    def get_query(self, sql_query, params=None):
+        """Executes SQL query, safely handling parameters if provided."""
+        return pd.read_sql(sql_query, self.conn, params=params)

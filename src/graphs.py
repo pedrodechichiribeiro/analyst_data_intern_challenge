@@ -64,39 +64,46 @@ class GraphLibrary:
         top_prod_sql = "SELECT case_product FROM cases GROUP BY case_product ORDER BY COUNT(*) DESC LIMIT 10"
         top_prods = self.db.get_query(top_prod_sql)['case_product'].tolist()
         
-        # 2. Query data for these products
-        sql = f"SELECT case_product, case_severity, COUNT(*) as count FROM cases WHERE case_product IN ({str(top_prods)[1:-1]}) GROUP BY case_product, case_severity"
-        df = self.db.get_query(sql)
+        # 2. Query data for these products safely
+        if not top_prods:
+            df = pd.DataFrame() # Handle case where there are no products
+        else:
+            placeholders = ','.join(['?'] * len(top_prods))
+            sql = f"SELECT case_product, case_severity, COUNT(*) as count FROM cases WHERE case_product IN ({placeholders}) GROUP BY case_product, case_severity"
+            df = self.db.get_query(sql, params=top_prods)
         
-        # Pivot and Normalize to Percentages
-        pivot_df = df.pivot(index='case_product', columns='case_severity', values='count').fillna(0)
-        pivot_perc = pivot_df.div(pivot_df.sum(axis=1), axis=0) * 100
         
-        # Define strict order and color scheme
-        severity_colors = {'Low': '#2ecc71', 'Normal': '#f1c40f', 'Medium': '#e67e22', 'High': '#e74c3c', 'Urgent': '#8b0000'}
-        desired_order = [s for s in ['Low', 'Normal', 'Medium', 'High', 'Urgent'] if s in pivot_perc.columns]
-        pivot_perc = pivot_perc[desired_order]
-
-        # IMPROVEMENT: Use Grouped Bar instead of Stacked for clarity
-        pivot_perc.plot(kind='barh', ax=ax, color=[severity_colors[s] for s in desired_order], width=0.8)
-
-        # Better Labeling: Place text at the end of bars rather than inside
-        for p in ax.patches:
-            width = p.get_width()
-            if width > 0: # Only label non-zero values
-                ax.text(width + 1, p.get_y() + p.get_height()/2, f'{width:.1f}%', 
-                        va='center', fontsize=8, fontweight='bold')
-
-        ax.set_title('Product Risk Profile: Severity Distribution', pad=20)
-        ax.set_xlabel('Percentage of Tickets (%)')
-        ax.set_ylabel('')
-        ax.set_xlim(0, 115) # Extra space for the labels
-        ax.legend(title='Severity', loc='lower right', fontsize='small')
-        
-        # AI Context Update
-        worst_prod = pivot_perc['Urgent'].idxmax() if 'Urgent' in pivot_perc else "N/A"
-        data_context = f"Analysis of top 10 products. Product with highest urgent ratio: {worst_prod}."
-        system_prompt = "You are a Risk Auditor. Identify which product has the most volatile severity distribution."
+        if not df.empty:
+            # Pivot and Normalize to Percentages
+            pivot_df = df.pivot(index='case_product', columns='case_severity', values='count').fillna(0)
+            pivot_perc = pivot_df.div(pivot_df.sum(axis=1), axis=0) * 100
+            
+            severity_colors = {'Low': '#2ecc71', 'Normal': '#f1c40f', 'Medium': '#e67e22', 'High': '#e74c3c', 'Urgent': '#8b0000'}
+            desired_order = [s for s in ['Low', 'Normal', 'Medium', 'High', 'Urgent'] if s in pivot_perc.columns]
+            pivot_perc = pivot_perc[desired_order]
+    
+            pivot_perc.plot(kind='barh', ax=ax, color=[severity_colors[s] for s in desired_order], width=0.8)
+    
+            for p in ax.patches:
+                width = p.get_width()
+                if width > 0: 
+                    ax.text(width + 1, p.get_y() + p.get_height()/2, f'{width:.1f}%', 
+                            va='center', fontsize=8, fontweight='bold')
+    
+            ax.set_title('Product Risk Profile: Severity Distribution', pad=20)
+            ax.set_xlabel('Percentage of Tickets (%)')
+            ax.set_ylabel('')
+            ax.set_xlim(0, 115) 
+            ax.legend(title='Severity', loc='lower right', fontsize='small')
+            
+            # AI Context Update (Note the updated check: 'Urgent' in pivot_perc.columns)
+            worst_prod = pivot_perc['Urgent'].idxmax() if 'Urgent' in pivot_perc.columns else "N/A"
+            data_context = f"Analysis of top 10 products. Product with highest urgent ratio: {worst_prod}."
+            
+        else:
+            # Fallback if no data exists
+            ax.set_title('Product Risk Profile: Severity Distribution\n(No Data Available)')
+            data_context = "No severity data available to analyze."
 
         return system_prompt, data_context
     
@@ -354,7 +361,7 @@ class GraphLibrary:
         
         ax.plot(df_weekly['date'], df_weekly['count'], marker='o', linestyle='-', color="#4291c5", label="Actual Volume")
         
-        if len(df_weekly) > 1:
+        if len(df_weekly) >= 2:
             # Convert dates to numbers for regression
             dates_num = mdates.date2num(df_weekly['date'])
             
