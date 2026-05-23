@@ -215,12 +215,23 @@ class AnalyticsApp(ctk.CTk):
         # Schedule update on main thread
         self.after(0, self._ai_complete, response)
 
-    def _ai_complete(self, response):
+    def _ai_complete(self, response_tuple):
         if not self.winfo_exists(): 
             return 
+            
+        # Unpack the tuple returned by AIAnalyst
+        success, response_text = response_tuple
+        
         self.ai_textbox.configure(state="normal")
         self.ai_textbox.delete("0.0", "end")
-        self.ai_textbox.insert("0.0", response)
+        
+        # Display the text or the error gracefully
+        if success:
+            self.ai_textbox.insert("0.0", response_text)
+        else:
+            self.ai_textbox.insert("0.0", f"Failed to generate analysis:\n{response_text}")
+            self.show_error("AI Error", "The AI module encountered an error. Check the text box for details.")
+            
         self.ai_textbox.configure(state="disabled")
         self.ai_button.configure(state="normal", text="Generate Deep Analysis")
 

@@ -100,10 +100,18 @@ class GraphLibrary:
             worst_prod = pivot_perc['Urgent'].idxmax() if 'Urgent' in pivot_perc.columns else "N/A"
             data_context = f"Analysis of top 10 products. Product with highest urgent ratio: {worst_prod}."
             
+        # ... (rest of your plotting code)
         else:
             # Fallback if no data exists
             ax.set_title('Product Risk Profile: Severity Distribution\n(No Data Available)')
             data_context = "No severity data available to analyze."
+
+        system_prompt = (
+            "You are a Quality Assurance Manager. "
+            "Analyze the severity distribution context. If 'Urgent' or 'High' cases make up "
+            "the majority of the worst product's tickets, recommend an immediate 'Code Freeze' "
+            "for that product. Otherwise, recommend routine maintenance and bug triage."
+        )
 
         return system_prompt, data_context
     
