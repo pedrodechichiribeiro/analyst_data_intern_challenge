@@ -116,11 +116,7 @@ class AnalyticsApp(ctk.CTk):
             "NOTE: The data_context and system_instructions changes according with the data selected for analysis, "
             "i.e. different data will change so the generated texts maintains a minimum logic. A bigger data_context, "
             "AI model and further fine tuning will produce exponentially better results and through analysis.\n\n"
-            "NOTE 2: Gemma 3 is unstable at best, so it's conclusions need human supervision and usually be re-generated multiple times. "
-            "Personally, I'd use a heavier model adjusting for the machine that is running the program "
-            "(in my case something like Mistral Neo, with 12B parameters). With proper hardware it could take way more data "
-            "and make long term, precise, reports over time. Alas, this is just a proof of concept/demonstration meant to run "
-            "on any marginally modern machine (~i5-8400 and 8-16gb RAM), so the model is rather small and may take some loading time."
+            "Currently utilizing: Google Gemni Flash 3.5"
         )
 
         self.disclaimer_label = ctk.CTkLabel(
