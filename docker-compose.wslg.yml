@@ -1,0 +1,11 @@
+# Override para Windows 11 com WSLg.
+# Sob Docker Desktop, o caminho de um volume é resolvido dentro da distro
+# `docker-desktop`, não na sua distro WSL. Por isso /tmp/.X11-unix (que na
+# sua distro é um symlink) não serve aqui: use o caminho real do WSLg.
+services:
+  dashboard:
+    volumes:
+      - /mnt/wslg/.X11-unix:/tmp/.X11-unix:rw
+      - /mnt/wslg:/mnt/wslg
+    environment:
+      - XDG_RUNTIME_DIR=/mnt/wslg/runtime-dir

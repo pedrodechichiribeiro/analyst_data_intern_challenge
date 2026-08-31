@@ -1,0 +1,11 @@
+# Modo desenvolvimento: monta o código do host por cima do que está na imagem,
+# para editar sem rebuild.
+#
+# Deliberadamente NÃO se chama docker-compose.override.yml, que seria carregado
+# automaticamente. Com o nome atual você precisa pedir por ele, e o
+# `docker compose up` padrão testa a imagem como ela realmente é.
+services:
+  dashboard:
+    volumes:
+      - ./src:/app/src
+      - ./data:/app/data

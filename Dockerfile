@@ -1,41 +1,48 @@
 # Dockerfile — AI-Powered Data Analysis Dashboard
-# Tkinter GUI rendered via X11 forwarding to the host display
+# GUI Tkinter renderizada no X server do host. Ver README_DOCKER.md.
 
-FROM python:3.11-slim
+# Tag fixada no bookworm: `python:3.11-slim` migra de release do Debian
+# sozinho e os nomes de pacote apt mudam junto.
+FROM python:3.11-slim-bookworm
 
-# --- X11 + Tkinter + Matplotlib system dependencies ---
-# libx11/libxext/libxrender: core X11 rendering
-# libxtst/libxi: input device support
-# libglib2.0-0: required by GTK/GDK used internally by some matplotlib backends
-# libgl1-mesa-glx: OpenGL fallback
-# libfontconfig1 + fonts-dejavu-core: prevent matplotlib font warnings
-# x11-xserver-utils: provides xhost (needed on the HOST, not here — included for reference)
+# --- Dependências de sistema para Tkinter + Matplotlib ---
+# python3-tk: binding Tk (já traz libx11-6, libxext6 e libxrender1 como dependência)
+# libxtst6 / libxi6: extensões de input do X
+# libfontconfig1 + fonts-dejavu-core: evita warnings de fonte do Matplotlib
+#
+# Removidos em relação à versão anterior: tk-dev (só headers de compilação),
+# libgl1 e libglib2.0-0 (o backend TkAgg não usa OpenGL nem GTK/GDK).
+# Se algo quebrar na renderização, reponha libgl1 e libglib2.0-0 e me diga.
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    python3-tk \
-    tk-dev \
-    libx11-6 \
-    libxext6 \
-    libxrender1 \
-    libxtst6 \
-    libxi6 \
-    libglib2.0-0 \
-    libgl1 \
-    libfontconfig1 \
-    fonts-dejavu-core \
+        python3-tk \
+        libxtst6 \
+        libxi6 \
+        libfontconfig1 \
+        fonts-dejavu-core \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
-# --- Python deps first — maximizes layer cache on rebuilds ---
+# --- Deps Python primeiro: maximiza o cache de camadas em rebuilds ---
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
+
+# --- Usuário não-root com o mesmo UID/GID do host ---
+# Sem isso, `xhost +SI:localuser:` não autoriza o container e a única
+# alternativa vira abrir o X server para todos os clientes locais.
+ARG UID=1000
+ARG GID=1000
+RUN groupadd -g ${GID} app || true \
+ && useradd -m -u ${UID} -g ${GID} -s /bin/bash app || true
 
 COPY src/ ./src/
 COPY data/ ./data/
 
-ENV PYTHONUNBUFFERED=1
-ENV PYTHONDONTWRITEBYTECODE=1
-# Force Matplotlib to use TkAgg — required for X11 forwarding
-ENV MPLBACKEND=TkAgg
+ENV PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    MPLBACKEND=TkAgg \
+    MPLCONFIGDIR=/tmp/matplotlib
+
+USER ${UID}:${GID}
 
 CMD ["python", "src/main.py"]

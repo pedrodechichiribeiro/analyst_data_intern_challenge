@@ -1,0 +1,10 @@
+# Override para Linux nativo.
+services:
+  dashboard:
+    volumes:
+      - /tmp/.X11-unix:/tmp/.X11-unix:rw
+
+    # MIT-SHM. Não é obrigatório para o X11 funcionar: é otimização, evita
+    # trafegar pixmaps pelo socket e deixa o redraw dos gráficos mais leve.
+    # Custa o isolamento do namespace de IPC — remova se preferir.
+    ipc: host

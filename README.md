@@ -89,8 +89,6 @@ GOOGLE_API_KEY=your_key_here_AIza...
 python src/main.py
 ```
 
-**Windows:** the repository includes a `run.bat` that automates steps 2 through 5.
-
 **With Docker:** see `README_DOCKER.md` for instructions on running the GUI through X11 forwarding.
 
 ---
@@ -156,13 +154,20 @@ A análise roda em thread separada para não travar a interface.
 │   ├── accounts_anonymized.json
 │   └── support_cases_anonymized.json
 ├── src/
-│   ├── main.py           # Interface e layout (CustomTkinter)
-│   ├── data_manager.py   # Carga dos JSONs e banco SQLite em memória
-│   ├── graphs.py         # Queries SQL + lógica de plotagem (Matplotlib)
-│   └── ai_analyst.py     # Configuração do agente Agno + Gemini
-├── .env                  # Chave da API (não versionado)
+│   ├── main.py                    # Interface e layout (CustomTkinter)
+│   ├── data_manager.py            # Carga dos JSONs e banco SQLite em memória
+│   ├── graphs.py                  # Queries SQL + lógica de plotagem (Matplotlib)
+│   └── ai_analyst.py              # Configuração do agente Agno + Gemini
+├── Dockerfile
+├── docker-compose.yml             # Base, neutra de SO
+├── docker-compose.linux.yml       # Override: Linux nativo
+├── docker-compose.wslg.yml        # Override: Windows 11 / WSLg
+├── docker-compose.dev.yml         # Override: bind mounts para desenvolvimento
+├── .dockerignore
+├── .env.example                   # Template — copie para .env
 ├── requirements.txt
-└── README.md
+├── README.md
+└── README_DOCKER.md
 ```
 
 ---
@@ -191,8 +196,6 @@ GOOGLE_API_KEY=sua_chave_aqui_AIza...
 # 5. Rode
 python src/main.py
 ```
-
-**Windows:** o repositório inclui um `run.bat` que automatiza os passos 2 a 5.
 
 **Via Docker:** veja o `README_DOCKER.md` para instruções de execução com GUI via X11 forwarding.
 

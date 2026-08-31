@@ -1,148 +1,133 @@
 # Docker — Guia de Execução
 
----
+O app é uma GUI Tkinter, então o container precisa alcançar um X server no host.
+Se você só quer rodar o projeto, o caminho do venv no README principal é mais curto.
 
 ## Pré-requisitos
 
-- [Docker Desktop](https://www.docker.com/products/docker-desktop/) instalado e rodando
-- Arquivo `.env` na raiz do projeto:
+- Docker Desktop ou Docker Engine + Compose v2
+- `.env` na raiz: `cp .env.example .env` e preencha `GOOGLE_API_KEY`
+- No `.env`, ajuste `UID`/`GID` (`id -u`, `id -g`) e `COMPOSE_FILE` para o seu SO
 
-```ini
-GOOGLE_API_KEY=sua_chave_aqui_AIza...
-```
+## Autorizando o X server
 
----
-
-## Instalar o xhost
-
-O `xhost` precisa estar instalado na **máquina host** (não no container) para autorizar o Docker a usar o display.
-
-| Sistema | Comando |
-|---|---|
-| Debian / Ubuntu | `sudo apt install x11-xserver-utils` |
-| Fedora ≤ 42 | `sudo dnf install xorg-x11-server-utils` |
-| Fedora 43+ | `sudo dnf install xhost` |
-| Fedora 43+ (fallback) | `sudo dnf install xorg-x11-xinit` |
-| Arch | `sudo pacman -S xorg-xhost` |
-| macOS | instalado junto com o XQuartz (ver seção macOS) |
-
-Para confirmar o nome exato do pacote no seu sistema:
+O X server do host precisa aceitar a conexão do container. A forma correta:
 
 ```bash
-dnf search xhost   # Fedora
-apt search xhost   # Debian/Ubuntu
+xhost +SI:localuser:$(id -un)
 ```
 
----
+Isso autoriza **um único usuário local** — o seu. É por isso que o container roda
+com o seu UID (`UID`/`GID` no `.env`): é assim que o X server o reconhece.
+
+> Não use `xhost +local:docker`. A família `local` do xhost aceita apenas o nome
+> vazio, então o `:docker` é ignorado e o comando libera o X server para
+> **qualquer** cliente local, não só para o Docker.
+
+Para revogar depois: `xhost -SI:localuser:$(id -un)`
+
+Instalando o xhost, se faltar:
+
+| Sistema | Comando |
+| --- | --- |
+| Debian / Ubuntu / WSL | `sudo apt install x11-xserver-utils` |
+| Fedora / RHEL | `sudo dnf install /usr/bin/xhost` |
+| Arch | `sudo pacman -S xorg-xhost` |
+| macOS | vem junto com o XQuartz |
 
 ## Linux
 
 ```bash
-# Allow Docker to access the local display
-xhost +local:docker
-
+xhost +SI:localuser:$(id -un)
 docker compose up --build
-
-# Revoke after you're done (optional but good practice)
-xhost -local:docker
 ```
 
----
+## Windows 11 (WSL2 com WSLg)
 
-## Windows 11 — WSL2 com WSLg
-
-O Windows 11 inclui WSLg, que expõe o display automaticamente. Rode dentro do terminal WSL:
+Rode dentro do terminal WSL. Confira primeiro o display:
 
 ```bash
-xhost +local:docker
+echo $DISPLAY          # normalmente :0
+xhost +SI:localuser:$(id -un)
 docker compose up --build
 ```
 
-Se `$DISPLAY` estiver vazio, force:
+O `xhost` costuma não vir instalado numa distro WSL nova — instale antes.
+
+## Windows 10 (WSL2 sem WSLg) — VcXsrv
+
+1. Instale o [VcXsrv](https://sourceforge.net/projects/vcxsrv/)
+2. Abra o XLaunch: Display number `0`, Start no client, **Disable access control marcado**
+3. No terminal WSL:
 
 ```bash
-export DISPLAY=:0
-xhost +local:docker
+# Modo NAT (padrão até o Windows 11 22H2):
+export DISPLAY=$(ip route show default | awk '{print $3}'):0.0
+
+# Se o WSL estiver em networkingMode=mirrored no .wslconfig, use:
+# export DISPLAY=localhost:0.0
+
 docker compose up --build
 ```
 
----
+Aqui **não** se roda `xhost`: o `DISPLAY` aponta para um endpoint TCP no host
+Windows, e a família `local:` do xhost só governa conexões via socket Unix.
+O controle de acesso nesse cenário é o "Disable access control" do VcXsrv.
 
-## Windows 10 — WSL2 sem WSLg
+Se a janela não abrir, libere o VcXsrv nas regras de entrada do Windows Defender Firewall.
 
-Sem WSLg, o display precisa ser roteado pelo IP do host Windows.
-
-**Passo 1 — Instale o [VcXsrv](https://sourceforge.net/projects/vcxsrv/) no Windows.**
-
-**Passo 2 — Abra o XLaunch com:**
-- Display number: `0`
-- Start no client: marcado
-- **Disable access control: ✅ obrigatório**
-
-**Passo 3 — No terminal WSL:**
-
-```bash
-# Point DISPLAY to the Windows host IP
-export DISPLAY=$(cat /etc/resolv.conf | grep nameserver | awk '{print $2}'):0.0
-
-xhost +local:docker
-docker compose up --build
-```
-
-> Se a janela não abrir, adicione uma exceção para o VcXsrv no Windows Defender Firewall (regras de entrada).
-
----
-
-## macOS
-
-**Passo 1 — Instale o XQuartz:**
+## macOS — XQuartz
 
 ```bash
 brew install --cask xquartz
 ```
 
-Após instalar, faça logout e login para registrar o XQuartz corretamente.
-
-**Passo 2 — Habilite conexões de rede:**
-
-Abra o XQuartz → **Preferências → Segurança** → marque **"Allow connections from network clients"**.
-
-**Passo 3 — Rode:**
+Faça logout/login. Abra o XQuartz → Preferências → Segurança → marque
+"Allow connections from network clients". Então:
 
 ```bash
 xhost +localhost
 DISPLAY=host.docker.internal:0 docker compose up --build
 ```
 
----
+Deixe `COMPOSE_FILE=docker-compose.yml` no `.env`: os overrides de Linux e WSLg
+montam sockets Unix que não existem no macOS.
+
+## Modo desenvolvimento
+
+Monta `src/` e `data/` do host por cima da imagem, para editar sem rebuild:
+
+```bash
+docker compose -f docker-compose.yml -f docker-compose.linux.yml -f docker-compose.dev.yml up
+```
+
+Note que passar `-f` explicitamente ignora o `COMPOSE_FILE` do `.env`.
 
 ## Comandos úteis
 
 | Ação | Comando |
-|---|---|
+| --- | --- |
 | Build + rodar | `docker compose up --build` |
 | Rodar sem rebuild | `docker compose up` |
 | Parar | `Ctrl+C` ou `docker compose down` |
 | Ver logs | `docker compose logs -f` |
 | Remover imagem | `docker rmi analyst-dashboard:latest` |
 
----
-
 ## Solução de problemas
 
-**`xhost: command not found`**
-Instale o pacote correspondente ao seu sistema — veja a tabela no início deste guia.
+**`DISPLAY variable is not set` no `compose up`**
+Esperado: o compose falha de propósito em vez de subir um container que nunca
+mostraria janela. Defina `DISPLAY` conforme a seção do seu SO.
 
-**`couldn't connect to display`**
-- Confirme que o `xhost +local:docker` foi executado antes do `compose up`
-- Verifique se `$DISPLAY` está definido: `echo $DISPLAY`
-- No Windows 10, confirme que o VcXsrv está rodando com "Disable access control" marcado
+**`couldn't connect to display` / `Authorization required`**
+Rode `xhost +SI:localuser:$(id -un)` antes do `up`, e confira que `UID`/`GID`
+no `.env` batem com `id -u` / `id -g`. Se você mudou esses valores depois do
+primeiro build, refaça: `docker compose build --no-cache`.
 
-**`GOOGLE_API_KEY not found`**
-O arquivo `.env` não existe ou está no lugar errado — deve ficar na raiz do projeto, ao lado do `docker-compose.yml`.
+**A chave da API não é encontrada**
+O `.env` precisa estar na raiz, ao lado do `docker-compose.yml`. Confira com
+`docker compose config` se `GOOGLE_API_KEY` aparece preenchido.
 
-**Janela não aparece no Windows 10**
-Adicione exceção para o VcXsrv no Windows Defender Firewall nas regras de entrada.
-
-**Erro de fonte ou renderização estranha**
-O Dockerfile já instala `fonts-dejavu-core`. Se persistir, rode `docker compose up --build` para forçar rebuild da imagem.
+**Permissão negada ao gravar cache do Matplotlib**
+O container roda como não-root. `MPLCONFIGDIR=/tmp/matplotlib` já cobre isso;
+se aparecer, confirme que a variável está no Dockerfile.
